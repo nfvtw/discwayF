@@ -27,6 +27,8 @@ const Reviews = sequelize.define('reviews', {
         type: DataTypes.DATE,
         allowNull: false,
     }
+}, {
+    timestamps: false
 })
 
 module.exports = Reviews;

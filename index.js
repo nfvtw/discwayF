@@ -4,6 +4,7 @@ const productRouter = require('./routes/product.routes')
 const categoriesRouter = require('./routes/categories.routes')
 const authRouter = require('./routes/auth.routes')
 const favouriteRouter = require('./routes/favourite.routes')
+const reviewRouter = require('./routes/reviews.routes')
 const dotenv = require('dotenv')
 const pool = require('./db.js')
 const sequelize = require('./models/sequelize.cjs');
@@ -35,11 +36,11 @@ Products.belongsTo(Users, { foreignKey: 'id_user' });
 Users.hasMany(Rents, { foreignKey: 'renter' });
 Rents.belongsTo(Users, { foreignKey: 'renter' });
 
-Products.hasMany(Rents, { foreignKey: 'idProduct' });
-Rents.belongsTo(Products, { foreignKey: 'idProduct' });
+Products.hasMany(Rents, { foreignKey: 'id_product' });
+Rents.belongsTo(Products, { foreignKey: 'id_product' });
 
-Products.hasMany(Reviews, { foreignKey: 'idProduct' });
-Reviews.belongsTo(Products, { foreignKey: 'idProduct' });
+Products.hasMany(Reviews, { foreignKey: 'id_product' });
+Reviews.belongsTo(Products, { foreignKey: 'id_product' });
 
 Products.hasMany(Favourites, { foreignKey: 'id_product' });
 Favourites.belongsTo(Products, { foreignKey: 'id_product' });
@@ -53,13 +54,13 @@ Products.belongsTo(Categories, { foreignKey: 'category_name' });
 
 (async () => {
   try {
-    await sequelize.sync({});
+    await sequelize.sync();
     console.log('Sequelize synced successfully. Tables updated.');
   } catch (err) {
     console.error('Failed to sync Sequelize:', err);
   }
 })();
 
-app.use('/', userRouter, productRouter, categoriesRouter, authRouter, favouriteRouter)
+app.use('/', userRouter, productRouter, categoriesRouter, authRouter, favouriteRouter, reviewRouter)
 
 app.listen(process.env.PORT, () => console.log(`SERVER STARTED ON PORT ${process.env.PORT}`))
