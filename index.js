@@ -54,7 +54,7 @@ Products.belongsTo(Categories, { foreignKey: 'category_name' });
 
 (async () => {
   try {
-    await sequelize.sync();
+    await sequelize.sync({});
     console.log('Sequelize synced successfully. Tables updated.');
   } catch (err) {
     console.error('Failed to sync Sequelize:', err);

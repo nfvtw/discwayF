@@ -5,9 +5,9 @@ const Users = require('../models/user.cjs');
 class ProductController {
     async createProduct(req, res) {
         const id_user = req.user.id
-        const {category_name, product_name, overview, price, photo, status = 'inactive'} = req.body
-        console.log(id_user, category_name, product_name, overview, price, photo)
-        const newProduct = await db.query('INSERT INTO products (id_user, category_name, product_name, overview, price, photo, status) values ($1, $2, $3, $4, $5, $6, $7) RETURNING *', [id_user, category_name, product_name, overview, price, photo, status])
+        const {category_name, product_name, overview, price, photo, status = 'inactive', rating = 0} = req.body
+        console.log(id_user, category_name, product_name, overview, price, status, photo, rating)
+        const newProduct = await db.query('INSERT INTO products (id_user, category_name, product_name, overview, price, photo, status, rating) values ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *', [id_user, category_name, product_name, overview, price, photo, status, rating])
 
         res.json(newProduct)
     }

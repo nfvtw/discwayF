@@ -36,6 +36,9 @@ const Products = sequelize.define('products', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  rating: {
+    type: DataTypes.FLOAT,
+  }
 }, {
   timestamps: false,
 });

@@ -25,7 +25,7 @@ const Reviews = sequelize.define('reviews', {
     },
     date_comment: {
         type: DataTypes.DATE,
-        allowNull: false,
+        defaultValue: DataTypes.NOW
     }
 }, {
     timestamps: false
