@@ -2,6 +2,14 @@ const dayjs = require('dayjs');
 const db = require('../db')
 const Review = require('../models/review.cjs');
 const Products = require('../models/product.cjs')
+const Users = require('../models/user.cjs')
+
+async function countReviewsByProductId(id_product) {
+        const reviews = await Review.findAll({
+            where: { id_product }
+        });
+        return reviews.length;
+    }
 
 class ReviewsController {
     async calculateAverage (req, res) {
@@ -47,7 +55,7 @@ class ReviewsController {
             const avg = sum / reviews.length;
 
             await Products.update(
-                { rating: avg },
+                { rating: avg.toFixed(1) },
                 { where: {id: id_product } }
             )
             
@@ -56,6 +64,70 @@ class ReviewsController {
         } catch (err) {
             console.log(err)
             res.status(400).json({ message: `Отзыв не был создан`})
+        }
+    }
+
+    async getCountReview (req, res) {
+        try {
+            const { id_product } = req.body
+
+            if (!id_product) {
+                return res.status(400).json({ message: "ID продукта не предоставлен" });
+            }
+
+            const count = await countReviewsByProductId(id_product)
+            
+            if (count === 0) {
+                return res.status(200).json({ message: `У этого товара нет рейтинга` })
+            }
+
+            return res.status(200).json({ message: `Рейтинг был подсчитан на основании ${count} оценок` })
+        } catch (err) {
+            console.log(err)
+            return res.status(400).json({ message: `Количество оценок не было подсчитано` })
+        }
+    }
+    async getReview (req, res) {
+        try {
+            const { id_product } = req.body
+
+            const product = await Products.findOne({
+                where: {id: id_product}
+            })
+
+            const count = await countReviewsByProductId(id_product)
+
+            if (count === 0) {
+                return res.status(200).json({ message: `У этого товара нет рейтинга` })
+            }
+
+            console.log(
+                'Рейтинг:', product.rating,
+                'На основании:', count, 'оценок'
+            )
+
+            const reviews = await Review.findAll({
+                where: { id_product }
+            })
+            
+            reviews.forEach(async review => {
+
+                const user = await Users.findOne(
+                    { where: { id: review.id_renter } }
+                )
+
+                console.log(
+                    'Рейтинг пользователя: ', review.rating,
+                    'Имя пользователя: ', user.name,
+                    'Дата: ', review.date_comment,
+                    'Комментарий: ', review.comment
+                )
+            })
+
+            return res.status(200).json({ message: `всё круто`})
+        } catch (err) {
+            console.log(err)
+            return res.status(400).json({ message: `ёпт` })
         }
     }
 }
