@@ -28,6 +28,10 @@ const Products = sequelize.define('products', {
     type: DataTypes.FLOAT,
     allowNull: false,
   },
+  location: {
+    type: DataTypes.STRING(30),
+    allowNull: false
+  },
   status: {
     type: DataTypes.STRING,
     allowNull: false,

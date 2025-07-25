@@ -5,6 +5,7 @@ const categoriesRouter = require('./routes/categories.routes')
 const authRouter = require('./routes/auth.routes')
 const favouriteRouter = require('./routes/favourite.routes')
 const reviewRouter = require('./routes/reviews.routes')
+const rentRouter = require('./routes/rents.routes')
 const dotenv = require('dotenv')
 const pool = require('./db.js')
 const sequelize = require('./models/sequelize.cjs');
@@ -33,8 +34,14 @@ pool.query('SELECT NOW()', (err, res) => {
 Users.hasMany(Products, { foreignKey: 'id_user' });
 Products.belongsTo(Users, { foreignKey: 'id_user' });
 
-Users.hasMany(Rents, { foreignKey: 'renter' });
-Rents.belongsTo(Users, { foreignKey: 'renter' });
+Users.hasMany(Rents, { foreignKey: 'id_renter' });
+Rents.belongsTo(Users, { foreignKey: 'id_renter' });
+
+Users.hasMany(Favourites, { foreignKey: 'id_user' });
+Favourites.belongsTo(Users, { foreignKey: 'id_user' });
+
+Users.hasMany(Reviews, { foreignKey: 'id_renter', as: 'reviews' }); // Накатанная связь для получения имени пользователя в отзыве
+Reviews.belongsTo(Users, { foreignKey: 'id_renter', as: 'user' }); // Накатанная связь для получения имени пользователя в отзыве
 
 Products.hasMany(Rents, { foreignKey: 'id_product' });
 Rents.belongsTo(Products, { foreignKey: 'id_product' });
@@ -45,22 +52,19 @@ Reviews.belongsTo(Products, { foreignKey: 'id_product' });
 Products.hasMany(Favourites, { foreignKey: 'id_product' });
 Favourites.belongsTo(Products, { foreignKey: 'id_product' });
 
-Users.hasMany(Favourites, { foreignKey: 'id_user' });
-Favourites.belongsTo(Users, { foreignKey: 'id_user' });
-
 Categories.hasMany(Products, { foreignKey: 'category_name' });
 Products.belongsTo(Categories, { foreignKey: 'category_name' });
 // Связи
 
 (async () => {
   try {
-    await sequelize.sync({});
+    await sequelize.sync();
     console.log('Sequelize synced successfully. Tables updated.');
   } catch (err) {
     console.error('Failed to sync Sequelize:', err);
   }
 })();
 
-app.use('/', userRouter, productRouter, categoriesRouter, authRouter, favouriteRouter, reviewRouter)
+app.use('/', userRouter, productRouter, categoriesRouter, authRouter, favouriteRouter, reviewRouter, rentRouter)
 
 app.listen(process.env.PORT, () => console.log(`SERVER STARTED ON PORT ${process.env.PORT}`))

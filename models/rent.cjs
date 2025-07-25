@@ -12,12 +12,12 @@ const Rents = sequelize.define('rents', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  renter: {
+  id_renter: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
   status: {
-    type: DataTypes.BOOLEAN,
+    type: DataTypes.STRING(30),
     allowNull: false,
   },
   date_in: {
@@ -27,11 +27,7 @@ const Rents = sequelize.define('rents', {
   date_out: {
     type: DataTypes.DATE,
     allowNull: false,
-  },
-  photo: {
-    type: DataTypes.STRING(50),
-    allowNull: false,
-  },
+  }
 }, {
   timestamps: false,
 });

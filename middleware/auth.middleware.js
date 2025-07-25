@@ -10,18 +10,19 @@ module.exports = function (req, res, next) {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader) {
+            console.log(`auth.middleware`)
             return res.status(403).json({ message: 'Нет заголовка авторизации' });
         }
-        console.log('AUTH HEADER:', req.headers.authorization);
         const token = req.headers.authorization.split(' ')[1]
         if (!token) {
-            return res.status(403).json({ message: 'Пользователь не авторизован, токен не валиден' })
+            console.log(`auth.middleware`)
+            return res.status(403).json({ message: 'Пользователь не авторизован, нет токена' })
         }
-        console.log(token, 123)
         const decodedData = jwt.verify(token, process.env.SECRET)
         req.user = decodedData
         next()
     } catch (err) {
+        console.log(`auth.middleware`)
         console.log(err)
         return res.status(403).json({ message: 'Пользователь не авторизован!' })
     }

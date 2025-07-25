@@ -7,6 +7,7 @@ const dayjs = require('dayjs');
 const { validationResult } = require('express-validator')
 const dotenv = require('dotenv')
 
+
 dotenv.config()
 
 const generateAccessToken = (id, admin) => {
@@ -24,29 +25,28 @@ class authController {
             if (!errors.isEmpty()) {
                 return res.status(400).json({ message: 'Ошибка при регистрации: ', errors})
             }
-            const {name, surname, patronymic, birthday, phone, email, password, admin = 'false'} = req.body
+            const {name, surname, patronymic, birthday, phone, email = null, password, admin = 'false'} = req.body
             const formattedBirthday = dayjs(birthday, 'DD.MM.YYYY', true);
             if (!formattedBirthday.isValid()) {
                 return res.status(400).json({ message: 'Неверный формат даты рождения' });
             }
-            console.log(name, surname, patronymic, birthday, phone, email, password, admin)
-            const candidateByEmail = await Users.findOne({ 
-                where: { email }
-            });
-            const candidateByPhone = await Users.findOne({ 
+            console.log(name, surname, patronymic, birthday, phone, password, admin)
+            if (!phone) {
+                return res.status(400).json({ message: 'Данные введены некорректно: введите телефон'})
+            }
+            const candidateByPhone = await Users.findOne({
                 where: { phone }
             });
-            if (candidateByEmail || candidateByPhone) {
-                if (candidateByEmail && candidateByPhone)
-                    return res.status(400).json({ message: 'Пользователь с такой почтой и номером уже существует'})
-                else if (candidateByEmail)
-                    return res.status(400).json({ message: 'Пользователь с такой почтой уже существует'})
-                else if (candidateByPhone)
-                    return res.status(400).json({ message: 'Пользователь с таким номер уже существует'})
+            if (candidateByPhone) {
+                return res.status(400).json({ message: 'Пользователь с таким номером уже существует'})
             }
             const hashPassword = bcrypt.hashSync(password, 7);
-            userController.createUser(name, surname, patronymic, birthday, phone, email, hashPassword, admin)
-            return res.status(200).json({ message: `Пользователь успешно зарегестрирован`})
+            const user = await Users.create({ name, surname, patronymic, birthday, phone, email, password: hashPassword, admin })
+            user.password = undefined
+            return res.status(200).json({ 
+                message: "Пользователь успешно зарегестрирован",
+                user: user
+            })
         } catch (err) {
             console.log(err)
             res.status(400).json({ message: 'Registration error' })
@@ -55,6 +55,10 @@ class authController {
 
     async login(req, res) {
         try {
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ message: 'Ошибка при регистрации: ', errors})
+            }
             const {phone, email, password} = req.body
             let user = null;
             if (phone) {
@@ -68,7 +72,7 @@ class authController {
             });
             }
             else {
-                 return res.status(400).json({ message: 'Не указан номер телефона или email' });
+                 return res.status(400).json({ message: 'Не указан номер телефона или адрес электронной почты' });
             }
             if (!user) {
                 return res.status(400).json({ message: `Пользователь  не найден`})
@@ -78,7 +82,10 @@ class authController {
                 return res.status(400).json({ message: `Введён неверный пароль`})
             }
             const token = generateAccessToken(user.id, user.admin)
-            return res.json({ token })
+            return res.json({
+                message: "Вы успешно зашли",
+                token: token
+            })
         } catch (err) {
             console.log(err)
             res.status(400).json({ message: 'Login error' })
